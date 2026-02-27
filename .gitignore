@@ -2,11 +2,23 @@
 node_modules/
  
 # Expo
-# Only ignore local caches, not config
-.expo/cache/
+.expo/
 dist/
 web-build/
 expo-env.d.ts
+
+# Uploads & generated media
+server/uploads/
+server/public/videos/
+animator_service/work/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Env files (never commit secrets)
+.env
+server/.env
  
  
 # Native key/cert files
