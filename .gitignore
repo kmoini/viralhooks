@@ -1,0 +1,45 @@
+# dependencies
+node_modules/
+ 
+# Expo
+# Only ignore local caches, not config
+.expo/cache/
+dist/
+web-build/
+expo-env.d.ts
+ 
+ 
+# Native key/cert files
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+ 
+# Metro
+.metro-health-check*
+ 
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+ 
+# macOS
+.DS_Store
+*.pem
+ 
+# local env files
+.env*.local
+ 
+# typescript
+*.tsbuildinfo
+ 
+*.apk
+*.aab
+build-*.apk
+build-*.aab
+ 
+ 
+.claude/
+test_direct.mp4
+ 
