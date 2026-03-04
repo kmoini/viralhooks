@@ -1,0 +1,122 @@
+[
+  {
+    "soundId": "ts_001",
+    "soundName": "Pink Lemonade (Remix)",
+    "bpm": 106,
+    "dropTimeSec": 2.1,
+    "energyType": "hype",
+    "tiktokUrl": "https://www.tiktok.com/music/Pink-Lemonade-Remix-7340000000001",
+    "region": "CA",
+    "updatedAt": "2026-03-02T18:00:00Z"
+  },
+  {
+    "soundId": "ts_002",
+    "soundName": "Bazooka Beat",
+    "bpm": 108,
+    "dropTimeSec": 1.8,
+    "energyType": "hype",
+    "tiktokUrl": "https://www.tiktok.com/music/Bazooka-Beat-7340000000002",
+    "region": "CA",
+    "updatedAt": "2026-03-02T14:00:00Z"
+  },
+  {
+    "soundId": "ts_003",
+    "soundName": "Shoulder Fling Challenge",
+    "bpm": 112,
+    "dropTimeSec": 1.5,
+    "energyType": "hype",
+    "tiktokUrl": "https://www.tiktok.com/music/Shoulder-Fling-Challenge-7340000000003",
+    "region": "CA",
+    "updatedAt": "2026-03-01T22:00:00Z"
+  },
+  {
+    "soundId": "ts_004",
+    "soundName": "Turbo Mode",
+    "bpm": 120,
+    "dropTimeSec": 1.2,
+    "energyType": "hype",
+    "tiktokUrl": "https://www.tiktok.com/music/Turbo-Mode-7340000000004",
+    "region": "CA",
+    "updatedAt": "2026-03-01T10:00:00Z"
+  },
+  {
+    "soundId": "ts_005",
+    "soundName": "GET UP",
+    "bpm": 116,
+    "dropTimeSec": 1.6,
+    "energyType": "hype",
+    "tiktokUrl": "https://www.tiktok.com/music/GET-UP-7340000000005",
+    "region": "CA",
+    "updatedAt": "2026-02-28T20:00:00Z"
+  },
+  {
+    "soundId": "ts_006",
+    "soundName": "Golden Hour Sway",
+    "bpm": 96,
+    "dropTimeSec": 3.0,
+    "energyType": "smooth",
+    "tiktokUrl": "https://www.tiktok.com/music/Golden-Hour-Sway-7340000000006",
+    "region": "CA",
+    "updatedAt": "2026-03-02T16:00:00Z"
+  },
+  {
+    "soundId": "ts_007",
+    "soundName": "Late Night Vibes",
+    "bpm": 100,
+    "dropTimeSec": 2.5,
+    "energyType": "smooth",
+    "tiktokUrl": "https://www.tiktok.com/music/Late-Night-Vibes-7340000000007",
+    "region": "CA",
+    "updatedAt": "2026-03-01T08:00:00Z"
+  },
+  {
+    "soundId": "ts_008",
+    "soundName": "Silk and Honey",
+    "bpm": 94,
+    "dropTimeSec": 2.8,
+    "energyType": "smooth",
+    "tiktokUrl": "https://www.tiktok.com/music/Silk-and-Honey-7340000000008",
+    "region": "CA",
+    "updatedAt": "2026-02-27T12:00:00Z"
+  },
+  {
+    "soundId": "ts_009",
+    "soundName": "Underwater Dream",
+    "bpm": 92,
+    "dropTimeSec": 3.2,
+    "energyType": "smooth",
+    "tiktokUrl": "https://www.tiktok.com/music/Underwater-Dream-7340000000009",
+    "region": "CA",
+    "updatedAt": "2026-02-26T15:00:00Z"
+  },
+  {
+    "soundId": "ts_010",
+    "soundName": "Bruh Sound Effect 2",
+    "bpm": 88,
+    "dropTimeSec": 1.0,
+    "energyType": "meme",
+    "tiktokUrl": "https://www.tiktok.com/music/Bruh-Sound-Effect-2-7340000000010",
+    "region": "CA",
+    "updatedAt": "2026-03-02T20:00:00Z"
+  },
+  {
+    "soundId": "ts_011",
+    "soundName": "Why You Always Lying",
+    "bpm": 92,
+    "dropTimeSec": 1.4,
+    "energyType": "meme",
+    "tiktokUrl": "https://www.tiktok.com/music/Why-You-Always-Lying-7340000000011",
+    "region": "CA",
+    "updatedAt": "2026-03-01T18:00:00Z"
+  },
+  {
+    "soundId": "ts_012",
+    "soundName": "Speed Demon Drop",
+    "bpm": 125,
+    "dropTimeSec": 1.0,
+    "energyType": "hype",
+    "tiktokUrl": "https://www.tiktok.com/music/Speed-Demon-Drop-7340000000012",
+    "region": "CA",
+    "updatedAt": "2026-02-25T09:00:00Z"
+  }
+]
