@@ -1,17 +1,37 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import HomeScreen from '../screens/HomeScreen';
-import UploadScreen from '../screens/UploadScreen';
-import GeneratingScreen from '../screens/GeneratingScreen';
+import TemplateGridScreen from '../screens/TemplateGridScreen';
+import MusicPickerScreen from '../screens/MusicPickerScreen';
+import GenerateScreen from '../screens/GenerateScreen';
 import ResultScreen from '../screens/ResultScreen';
-import { DanceTemplate } from '../types/DanceTemplate';
+import type { MusicInfo } from '../types/music';
+
+export type SoundInfo = {
+  soundId: string;
+  soundName: string;
+  bpm: number;
+  dropTimeSec: number;
+  tiktokUrl: string;
+  energyType?: string;
+};
+
+export { MusicInfo };
 
 export type RootStackParamList = {
-  Home: undefined;
-  Upload: { template: DanceTemplate } | undefined;
-  Generating: { clipLength: number; taskId: string } | undefined;
-  Result: { videoUrl: string; clipLength: number } | undefined;
+  TemplateGrid: undefined;
+  MusicPicker: { templateId: string };
+  Generate: {
+    templateId: string;
+    music?: MusicInfo;
+  };
+  Result: {
+    videoUrl: string;
+    templateId: string;
+    sound?: SoundInfo;
+    music?: MusicInfo;
+    mixMode?: 'withMusic' | 'mute';
+  };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -19,10 +39,10 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 const AppNavigator: React.FC = () => {
   return (
     <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="Home" component={HomeScreen} />
-        <Stack.Screen name="Upload" component={UploadScreen} />
-        <Stack.Screen name="Generating" component={GeneratingScreen} />
+      <Stack.Navigator id="RootStack" screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="TemplateGrid" component={TemplateGridScreen} />
+        <Stack.Screen name="MusicPicker" component={MusicPickerScreen} />
+        <Stack.Screen name="Generate" component={GenerateScreen} />
         <Stack.Screen name="Result" component={ResultScreen} />
       </Stack.Navigator>
     </NavigationContainer>

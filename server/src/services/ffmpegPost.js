@@ -218,6 +218,97 @@ async function processVideo({
   return baseClipPath;
 }
 
+// ── Ping-pong loop for TikTok (fwd+rev ×2 ≈ 32s) ──
+/**
+ * Build a 32-second ping-pong loop from an 8-second clip:
+ *   A (forward) → B (reverse) → C (forward) → D (reverse)
+ *
+ * Because each boundary shares the same frame (end of fwd =
+ * start of rev, and vice-versa) the direction switch is
+ * inherently seamless. A 0.15s xfade softens it further.
+ *
+ * Filter graph:
+ *   split=4 → trim+setpts each (reverse on B,D) →
+ *   xfade chain (3 × 0.15s) → tpad + trim to 32.0s
+ *
+ * Total before pad: 4×8 − 3×0.15 = 31.55s
+ * tpad clones last frame → trim to exactly 32s
+ *
+ * @param {string} inputPath  - path to the 8s source MP4
+ * @param {string} outputPath - path for the 32s output MP4
+ * @returns {Promise<string>} outputPath
+ */
+async function loopVideoForTikTok(inputPath, outputPath) {
+  ensureFfmpegAvailable();
+
+  if (!fs.existsSync(inputPath)) {
+    throw new Error(`Input video not found: ${inputPath}`);
+  }
+
+  console.log('[FFMPEG] Ping-pong looping to 32s (forward+reverse)');
+
+  const CLIP_DUR = 8;
+  const XFADE_DUR = 0.15;
+
+  // 1) Split input into 4 copies
+  const filters = [
+    '[0:v]split=4[v0][v1][v2][v3]',
+  ];
+
+  // 2) Trim + normalize each; reverse segments B (v1) and D (v3)
+  //    Pattern: fwd, rev, fwd, rev
+  const segLabels = ['seg0', 'seg1', 'seg2', 'seg3'];
+  const isReverse = [false, true, false, true];
+
+  for (let i = 0; i < 4; i++) {
+    const rev = isReverse[i] ? ',reverse,setpts=PTS-STARTPTS' : '';
+    filters.push(
+      `[v${i}]trim=0:${CLIP_DUR},setpts=PTS-STARTPTS${rev}[${segLabels[i]}]`
+    );
+  }
+
+  // 3) Chain xfade transitions between segments
+  //    Offsets: seam at 8s → offset 7.85, output ~15.85s
+  //             seam at 15.85s → offset 15.70, output ~23.70s
+  //             seam at 23.70s → offset 23.55, output ~31.55s
+  let runningDur = CLIP_DUR;
+  let prevLabel = segLabels[0];
+
+  for (let i = 1; i < segLabels.length; i++) {
+    const offset = (runningDur - XFADE_DUR).toFixed(2);
+    const outLabel = i < segLabels.length - 1 ? `x${i}` : 'xfinal';
+    filters.push(
+      `[${prevLabel}][${segLabels[i]}]xfade=transition=fade:duration=${XFADE_DUR}:offset=${offset}[${outLabel}]`
+    );
+    runningDur = runningDur + CLIP_DUR - XFADE_DUR;
+    prevLabel = outLabel;
+  }
+
+  // 4) Pad to fill the 0.45s gap, then hard-trim to exactly 32s
+  filters.push(
+    `[${prevLabel}]tpad=stop_mode=clone:stop_duration=1,trim=0:32,setpts=PTS-STARTPTS[vout]`
+  );
+
+  const filterGraph = filters.join(';');
+
+  await runFfmpeg([
+    '-i', inputPath,
+    '-filter_complex', filterGraph,
+    '-map', '[vout]',
+    '-c:v', 'libx264',
+    '-preset', 'veryfast',
+    '-crf', '20',
+    '-pix_fmt', 'yuv420p',
+    '-an',
+    '-movflags', '+faststart',
+    '-y',
+    outputPath,
+  ]);
+
+  console.log('[FFMPEG] Ping-pong loop complete');
+  return outputPath;
+}
+
 // ── Safe file delete ────────────────────────────
 function safeDelete(filePath) {
   try {
@@ -293,6 +384,7 @@ async function muxAudioIntoVideo(videoPath, audioPath, outputPath, durationSec =
 module.exports = {
   ensureFfmpegAvailable,
   processVideo,
+  loopVideoForTikTok,
   muxAudioIntoVideo,
   downloadToFile,
   safeDelete,

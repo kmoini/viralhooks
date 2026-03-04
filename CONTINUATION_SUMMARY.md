@@ -1,100 +1,141 @@
 # SnapDance App - Continuation Summary
 
-## Current Status (as of Feb 12, 2026)
+## Current Status (as of Feb 27, 2026)
 
 You are building **SnapDance**, a React Native + TypeScript + Expo app using **React Navigation (native stack)**.
 
-### What's Already Built (Steps 1-3):
+---
 
-1. **Home Screen** - Shows a 2-column grid of 10 dance templates
-   - Only Template #1 is enabled (clickable)
-   - Templates #2-#10 show "Coming Soon" overlay
+## What's Already Built (Steps 1–4 + backend):
+
+### Frontend (Steps 1–4 complete)
+
+1. **HomeScreen** — 2-column grid of 10 dance templates
+   - Only Template #1 is enabled (clickable); #2–#10 show "Coming Soon" overlay
    - Tapping Template #1 navigates to UploadScreen
 
-2. **UploadScreen** - Photo upload and preview
-   - Shows template name at top ("Template #1")
-   - Shows "Clip length: 5 seconds"
-   - Button "Pick Photo" opens the image picker (expo-image-picker)
-   - After picking a photo, the preview displays (300px tall, rounded corners)
-   - Button "Animate (mock)" appears after a photo is selected
+2. **UploadScreen** — Photo upload and preview
+   - Shows template name + "Clip length: 5 seconds"
+   - "Pick Photo" opens expo-image-picker
+   - Preview displays after picking (300px tall, rounded corners)
+   - "Animate" button appears after photo is selected
 
-3. **Mock Generation Pipeline (Just Built - Step 4)**
-   - Tapping "Animate (mock)" navigates to GeneratingScreen
-   - GeneratingScreen shows a spinner + "Generating your 5s SnapDance…"
-   - After 4 seconds, auto-navigates to ResultScreen
-   - ResultScreen displays:
-     - Video player (expo-av) playing a sample MP4 (w3schools bbb.mp4)
-     - Button "Save to Camera Roll" (downloads MP4 and saves using expo-media-library)
-     - Button "Share to Social" (downloads MP4 and opens OS share sheet using expo-sharing)
-     - Button "Try Another" (navigates back to Home)
+3. **GeneratingScreen** — Polls backend until done
+   - Calls `POST /api/animate` with image + templateId + durationSeconds
+   - Polls `GET /api/task/:taskId` every 3s until status is SUCCEEDED or FAILED
+   - Shows spinner + "Generating your 5s SnapDance…"
+   - Auto-navigates to ResultScreen when SUCCEEDED
 
-### Project Structure:
+4. **ResultScreen** — Video playback + actions
+   - expo-av video player (plays the Cloudinary URL returned by backend)
+   - "Save to Camera Roll" — downloads + saves via expo-media-library
+   - "Share to Social" — downloads + opens OS share sheet via expo-sharing
+   - "Try Another" — navigates back to HomeScreen
+
+### Backend (Node/Express — fully operational)
+
+- **Mode**: `USE_KLING=true` (Kling 2.6 via PiAPI)
+- **Port**: 3001
+- **Two routes**:
+  - `POST /api/animate` — accepts multipart image + templateId + durationSeconds, starts Kling job
+  - `GET /api/task/:taskId` — polls Kling status, downloads MP4, uploads to Cloudinary, returns `{ status, videoUrl }`
+
+---
+
+## Key Architecture Decisions
+
+### Cloudinary for everything (no ngrok dependency)
+
+- **Selfie upload**: `POST /api/animate` uploads the selfie to Cloudinary via `cloudinaryUpload.js`
+  - Cloudinary URL passed to Kling as input image (Kling requires a public URL)
+- **Video output**: `GET /api/task/:taskId` Kling success path:
+  1. Downloads finished MP4 from Kling to `server/public/videos/<taskId>.mp4`
+  2. Uploads that local MP4 to Cloudinary via `cloudinaryVideoUpload.js`
+  3. Deletes the local MP4
+  4. Sets `job.videoUrl = cloudinary secure_url`
+  5. Returns that Cloudinary URL to the mobile app as `videoUrl`
+- Result: the mobile app gets a stable `res.cloudinary.com` URL — no ngrok needed at all
+
+### Backend mode priority
+`USE_ANIMATOR` > `USE_RUNWAY` > `USE_KLING` > Mock fallback
+
+---
+
+## Project File Structure
 
 ```
 src/
 ├── components/
-│   └── TemplateGrid.tsx        # 10-template 2-column grid
+│   └── TemplateGrid.tsx        # 2-column template grid
 ├── screens/
 │   ├── HomeScreen.tsx          # Renders TemplateGrid
 │   ├── UploadScreen.tsx        # Photo pick + preview + Animate button
-│   ├── GeneratingScreen.tsx    # Spinner + 4s delay
+│   ├── GeneratingScreen.tsx    # Spinner + polls backend
 │   └── ResultScreen.tsx        # Video play + save/share/try again
 ├── navigation/
 │   └── AppNavigator.tsx        # React Navigation native stack
 ├── config/
 │   └── danceTemplates.ts       # 10 template objects (id, title, enabled)
+├── services/
+│   ├── api.ts                  # Axios instance — base URL: 192.168.2.75:3001
+│   └── jobs.ts                 # startAnimateWithImage(), getTask()
 └── types/
-    └── DanceTemplate.ts        # TypeScript type definition
+    └── DanceTemplate.ts        # TypeScript type
 
-App.tsx                          # Root component (uses AppNavigator)
-package.json                     # Dependencies
+server/
+├── index.js                    # Express server (462 lines), 2 routes
+├── danceTemplates.js           # Server-side templates with Kling prompts
+├── klingClient.js              # PiAPI HTTP client
+├── cloudinaryUpload.js         # Selfie → Cloudinary (image)
+├── cloudinaryVideoUpload.js    # MP4 → Cloudinary (video) ← NEW
+├── runwayClient.js             # Runway gen3a_turbo client (unused when USE_KLING)
+├── animatorClient.js           # Python reenactment pipeline client (unused)
+├── videoPostprocess.js         # ffmpeg letterbox post-processing
+├── drivers/                    # Driver videos for Animator mode
+├── public/videos/              # Temp MP4 landing spot (deleted after Cloudinary upload)
+└── uploads/                    # Selfie landing spot (deleted after Cloudinary upload)
+
+App.tsx                         # Root — renders AppNavigator
 ```
 
-### Key Dependencies Installed:
+---
 
-- `expo`, `react`, `react-native`
-- `@react-navigation/native`, `@react-navigation/native-stack`
-- `expo-av`, `expo-file-system`, `expo-media-library`, `expo-sharing`, `expo-image-picker`
-- `react-native-screens`, `react-native-safe-area-context`
-- TypeScript dev dependencies
+## Environment Variables (server/.env)
 
-### How to Continue Development:
+```
+USE_KLING=true
+KLING_API_KEY=<piapi key>
+CLOUDINARY_CLOUD_NAME=<name>
+CLOUDINARY_API_KEY=<key>
+CLOUDINARY_API_SECRET=<secret>
+POSTPROCESS_MODE=OFF
+# PUBLIC_BASE_URL no longer needed (Cloudinary replaced ngrok for video serving)
+```
 
-When starting a fresh Claude chat, provide:
+---
 
-1. **Your beginner status** - "I am a beginner learning React Native step-by-step"
-2. **Current task/feature** - What you want to build next (e.g., "Connect ResultScreen to a real video generation API")
-3. **Constraints** - "Only one step at a time, stop and ask me to confirm before moving on"
-4. **Reference this file** - Say "See the CONTINUATION_SUMMARY.md in the SnapDance project"
-
-### Next Possible Steps (Examples - Choose One):
-
-- **Step 5**: Connect ResultScreen to a real Runway API for video generation
-- **Step 6**: Add user authentication (sign up / log in)
-- **Step 7**: Create a gallery/history screen showing past generated videos
-- **Step 8**: Add template customization (color, speed, effects)
-- **Step 9**: Implement video trimming/editing before generation
-- **Step 10**: Analytics tracking and user onboarding
-
-### Running the App:
+## Running the App
 
 ```bash
-cd c:\Users\ali.m\PROJECTS\SnapDance
+# Terminal 1 — backend
+cd d:/Apps/PROJECTS/SnapDance/server
+node index.js
 
-# Start the dev server
+# Terminal 2 — frontend
+cd d:/Apps/PROJECTS/SnapDance
 npx expo start
-
-# Open on iOS simulator or Android emulator / Expo Go app
 ```
 
-### Testing the Current Features:
+---
 
-1. App opens → Home screen with template grid
-2. Tap Template #1 → UploadScreen
-3. Tap "Pick Photo" → Choose an image
-4. Preview appears → Tap "Animate (mock)"
-5. Spinner screen for ~4s → Auto-navigates to video result
-6. Video plays → Tap save/share/try again buttons
+## Next Possible Steps (choose one)
+
+- **Step 5**: Enable more dance templates (add Kling prompts in `server/danceTemplates.js`, set `enabled: true` in `src/config/danceTemplates.ts`)
+- **Step 6**: User authentication (sign up / log in)
+- **Step 7**: Gallery/history screen showing past generated videos
+- **Step 8**: Error handling improvements (show error message on ResultScreen if job fails)
+- **Step 9**: Loading progress indicator (show % or elapsed time on GeneratingScreen)
+- **Step 10**: Onboarding / splash screen
 
 ---
 

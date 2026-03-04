@@ -50,7 +50,7 @@ const { postprocessVideo } = require('./videoPostprocess');
 
 // ── Viral render modules ────────────────────────────────
 const { pickTrendingSound, pickBestTemplateForSound, computeTimingPlan } = require('./src/services/soundMatch');
-const { processVideo: processViralVideo, muxAudioIntoVideo, downloadToFile: downloadToFileFfmpeg, safeDelete } = require('./src/services/ffmpegPost');
+const { processVideo: processViralVideo, loopVideoForTikTok, muxAudioIntoVideo, downloadToFile: downloadToFileFfmpeg, safeDelete } = require('./src/services/ffmpegPost');
 // viralTemplates loaded internally by soundMatch — available here if needed later
 // const { getViralTemplate, VIRAL_TEMPLATES } = require('./src/data/viralTemplates');
 
@@ -695,17 +695,21 @@ app.get('/api/task/:taskId', async (req, res) => {
                 await downloadFile(remoteUrl, rawPath);
                 console.log(`[VIRAL] Downloaded raw video for ${taskId}`);
 
-                // Run FFmpeg pipeline (timing + watermark + trim + optional loop)
+                // Run FFmpeg pipeline (timing + watermark + trim to 8s)
                 const outputPath = await processViralVideo({
                   inputPath: rawPath,
                   speedFactor: job.timingsApplied.speedFactor,
                   leadHoldSec: job.timingsApplied.leadHoldSec,
                   targetDurationSec: job.timingsApplied.targetDurationSec,
-                  loopToSec: job.loopToSec,
                 });
 
+                // ── Loop to 32s for TikTok ──
+                const loopedPath = path.join(videosDir, `${taskId}_tikloop.mp4`);
+                await loopVideoForTikTok(outputPath, loopedPath);
+                safeDelete(outputPath); // remove 8s clip
+
                 // ── Audio mux (if mixMode=withMusic and music available) ──
-                let finalOutputPath = outputPath;
+                let finalOutputPath = loopedPath;
                 if (job.mixMode === 'withMusic' && job.music && job.music.audioUrl) {
                   try {
                     const audioTempPath = path.join(videosDir, `${taskId}_audio_tmp.m4a`);
@@ -713,18 +717,18 @@ app.get('/api/task/:taskId', async (req, res) => {
                     await downloadToFileFfmpeg(job.music.audioUrl, audioTempPath);
                     const muxedPath = path.join(videosDir, `${taskId}_muxed.mp4`);
                     await muxAudioIntoVideo(
-                      outputPath,
+                      loopedPath,
                       audioTempPath,
                       muxedPath,
-                      job.timingsApplied.targetDurationSec || 8,
+                      32,
                     );
                     finalOutputPath = muxedPath;
                     safeDelete(audioTempPath);
-                    safeDelete(outputPath); // remove silent version
+                    safeDelete(loopedPath); // remove silent looped version
                     console.log(`[VIRAL] Audio muxed into video for ${taskId}`);
                   } catch (muxErr) {
                     console.warn(`[VIRAL] Audio mux failed, using silent video: ${muxErr.message}`);
-                    finalOutputPath = outputPath;
+                    finalOutputPath = loopedPath;
                   }
                 }
 
