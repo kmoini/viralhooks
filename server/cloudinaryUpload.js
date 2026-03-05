@@ -1,11 +1,5 @@
-const { v2: cloudinary } = require('cloudinary');
+const cloudinary = require('./src/lib/cloudinary');
 const fs = require('fs/promises');
-
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key:    process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
 
 /**
  * Upload a selfie to Cloudinary, delete the local file, return the secure URL.

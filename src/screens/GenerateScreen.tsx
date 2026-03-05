@@ -57,11 +57,17 @@ const GenerateScreen: React.FC = () => {
   const attemptsRef = useRef(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // Queue delay tracking
+  const [generatingStartedAt, setGeneratingStartedAt] = useState<number | null>(null);
+  const [showQueueMsg, setShowQueueMsg] = useState(false);
+  const queueTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
       doneRef.current = true;
       if (intervalRef.current) clearInterval(intervalRef.current);
+      if (queueTimerRef.current) clearTimeout(queueTimerRef.current);
     };
   }, []);
 
@@ -90,6 +96,13 @@ const GenerateScreen: React.FC = () => {
       doneRef.current = false;
       attemptsRef.current = 0;
       setPhase('generating');
+      setGeneratingStartedAt(Date.now());
+      setShowQueueMsg(false);
+
+      // Show queue message after 90 seconds of PENDING
+      queueTimerRef.current = setTimeout(() => {
+        if (!doneRef.current) setShowQueueMsg(true);
+      }, 90_000);
 
       intervalRef.current = setInterval(async () => {
         if (doneRef.current) return;
@@ -98,8 +111,10 @@ const GenerateScreen: React.FC = () => {
           if (attemptsRef.current >= MAX_POLL_ATTEMPTS && !doneRef.current) {
             doneRef.current = true;
             if (intervalRef.current) clearInterval(intervalRef.current);
+            if (queueTimerRef.current) clearTimeout(queueTimerRef.current);
             Alert.alert('Timed out', 'Generation took too long. Please try again.');
             setPhase('setup');
+            setShowQueueMsg(false);
             return;
           }
 
@@ -108,6 +123,8 @@ const GenerateScreen: React.FC = () => {
           if (result.status === 'SUCCEEDED' && result.videoUrl && !doneRef.current) {
             doneRef.current = true;
             if (intervalRef.current) clearInterval(intervalRef.current);
+            if (queueTimerRef.current) clearTimeout(queueTimerRef.current);
+            setShowQueueMsg(false);
             setPhase('finalizing');
             // DEBUG: log what the backend returned
             console.log('[NAV TO RESULT] sound:', JSON.stringify(result.sound));
@@ -127,8 +144,10 @@ const GenerateScreen: React.FC = () => {
           if (result.status === 'FAILED' && !doneRef.current) {
             doneRef.current = true;
             if (intervalRef.current) clearInterval(intervalRef.current);
+            if (queueTimerRef.current) clearTimeout(queueTimerRef.current);
             Alert.alert('Generation failed', 'The server reported an error.');
             setPhase('setup');
+            setShowQueueMsg(false);
           }
         } catch (e: any) {
           const isTimeout =
@@ -142,8 +161,10 @@ const GenerateScreen: React.FC = () => {
           if (is404 && !doneRef.current) {
             doneRef.current = true;
             if (intervalRef.current) clearInterval(intervalRef.current);
+            if (queueTimerRef.current) clearTimeout(queueTimerRef.current);
             Alert.alert('Task not found', 'The server was restarted. Please try again.');
             setPhase('setup');
+            setShowQueueMsg(false);
           }
         }
       }, 2000);
@@ -206,6 +227,11 @@ const GenerateScreen: React.FC = () => {
           <ActivityIndicator size="large" color="#fff" />
           <Text style={styles.progressText}>{phaseLabel[phase]}</Text>
           <Text style={styles.progressSub}>This can take a few minutes</Text>
+          {showQueueMsg && phase === 'generating' && (
+            <Text style={styles.queueMsg}>
+              Rendering in provider queue{'\u2026'} this can take a few minutes.
+            </Text>
+          )}
         </View>
       </SafeAreaView>
     );
@@ -355,8 +381,8 @@ const GenerateScreen: React.FC = () => {
 
         {/* Generate button */}
         <TouchableOpacity
-          style={[styles.generateBtn, !imageUri && styles.generateBtnDisabled]}
-          disabled={!imageUri}
+          style={[styles.generateBtn, (!imageUri || phase !== 'setup') && styles.generateBtnDisabled]}
+          disabled={!imageUri || phase !== 'setup'}
           onPress={handleGenerate}
         >
           <Text style={styles.generateBtnText}>
@@ -444,6 +470,7 @@ const styles = StyleSheet.create({
   progressContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 20 },
   progressText: { color: '#fff', fontSize: 18, fontWeight: '600', marginTop: 16 },
   progressSub: { color: '#666', fontSize: 13, marginTop: 8 },
+  queueMsg: { color: '#ff2d55', fontSize: 13, marginTop: 16, textAlign: 'center', paddingHorizontal: 32 },
   errorText: { color: '#e74c3c', fontSize: 16, padding: 20 },
 });
 

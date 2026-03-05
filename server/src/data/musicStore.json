@@ -10,5 +10,17 @@
     "bpmDetected": true,
     "durationSec": 483.8,
     "createdAt": "2026-03-04T17:48:11.028Z"
+  },
+  {
+    "musicId": "extract_ac2a94d3",
+    "source": "extract",
+    "title": "FullSizeRender (extracted)",
+    "artist": "Unknown",
+    "previewUrl": "https://res.cloudinary.com/dqxgxnvdx/video/upload/v1772724671/snapdance/audio/5ee05405-009b-4782-8fac-657ea0cd9050_audio.m4a",
+    "audioUrl": "https://res.cloudinary.com/dqxgxnvdx/video/upload/v1772724671/snapdance/audio/5ee05405-009b-4782-8fac-657ea0cd9050_audio.m4a",
+    "bpm": 105,
+    "bpmDetected": true,
+    "durationSec": 12.1,
+    "createdAt": "2026-03-05T15:31:12.013Z"
   }
 ]

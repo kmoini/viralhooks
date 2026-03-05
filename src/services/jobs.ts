@@ -176,3 +176,20 @@ export async function getTask(taskId: string): Promise<TaskResult> {
   const response = await api.get(`/api/task/${taskId}`, { timeout: 30000 });
   return response.data;
 }
+
+/**
+ * Request the backend to burn an overlay (text + emoji) onto a video.
+ * Returns the Cloudinary URL of the overlay-burned MP4.
+ */
+export async function renderVideoWithOverlay(
+  videoUrl: string,
+  overlayTemplateId: string,
+  text: string,
+): Promise<string> {
+  const response = await api.post(
+    '/api/video/with-overlays',
+    { videoUrl, overlayTemplateId, text },
+    { timeout: 120000 },
+  );
+  return response.data.videoUrl;
+}

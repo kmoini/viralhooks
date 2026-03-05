@@ -107,6 +107,41 @@ app.use('/uploads', express.static(uploadsDir));
 // ── Mount music routes ──────────────────────────────────
 app.use('/api/music', musicRoutes);
 
+// ── Video overlay endpoint ──────────────────────────────
+const { renderVideoWithOverlay } = require('./src/services/overlayService');
+
+app.post('/api/video/with-overlays', async (req, res) => {
+  console.log('[OVERLAYS] POST /api/video/with-overlays hit');
+  try {
+    const { videoUrl, overlayTemplateId, text } = req.body;
+
+    if (!videoUrl || typeof videoUrl !== 'string') {
+      console.warn('[OVERLAYS] Rejected: missing videoUrl');
+      return res.status(400).json({ error: 'videoUrl is required' });
+    }
+    if (!overlayTemplateId || typeof overlayTemplateId !== 'string') {
+      console.warn('[OVERLAYS] Rejected: missing overlayTemplateId');
+      return res.status(400).json({ error: 'overlayTemplateId is required' });
+    }
+    if (!text || typeof text !== 'string') {
+      console.warn('[OVERLAYS] Rejected: missing text');
+      return res.status(400).json({ error: 'text is required' });
+    }
+    if (text.length > 200) {
+      console.warn('[OVERLAYS] Rejected: text too long');
+      return res.status(400).json({ error: 'text must be 200 characters or fewer' });
+    }
+
+    console.log(`[OVERLAYS] Accepted: template=${overlayTemplateId}, text="${text.slice(0, 50)}...", video=${videoUrl.slice(0, 60)}...`);
+    const resultUrl = await renderVideoWithOverlay(videoUrl, overlayTemplateId, text);
+    console.log(`[OVERLAYS] Responding with: ${resultUrl.slice(0, 80)}...`);
+    res.json({ videoUrl: resultUrl });
+  } catch (err) {
+    console.error('[OVERLAYS] Route error:', err.message);
+    res.status(500).json({ error: err.message || 'Overlay rendering failed' });
+  }
+});
+
 // ── Public URL builder ──────────────────────────────────
 // Combines PUBLIC_BASE_URL with a local pathname.
 // Required when USE_KLING=true (Kling/PiAPI needs a publicly reachable image URL).
@@ -618,34 +653,57 @@ app.get('/api/task/:taskId', async (req, res) => {
     }
   }
 
-  // ── Kling: check status ──
+  // ── Kling: check status (robust, two-phase timeout + snapshot logging) ──
   if (job.mode === 'kling' && job.status === 'PENDING') {
     try {
-      const taskData      = await kling.getTask(job.providerTaskId);
-      const mappedStatus  = kling.mapStatus(taskData.status);
+      const taskData = await kling.getTask(job.providerTaskId);
+      const parsed   = kling.parseTaskStatus(taskData);
 
-      if (mappedStatus === 'FAILED') {
+      job._pollCount = (job._pollCount || 0) + 1;
+
+      // Log snapshot every 5th poll or on terminal state
+      if (job._pollCount % 5 === 1 || parsed.status !== 'PENDING') {
+        console.log(kling.snapshotLog(job.providerTaskId, parsed, job.createdAt));
+      }
+
+      // Two-phase timeout check (uses parsed.startedAt to distinguish queue vs processing)
+      const timeout = kling.checkTimeout(parsed, job.createdAt);
+      if (timeout.timedOut) {
         job.status = 'FAILED';
-        job.error  = taskData.error?.message || taskData.error || taskData.message || 'Kling generation failed';
-        console.log(`[KLING] Job ${taskId} FAILED — full response:`, JSON.stringify(taskData, null, 2));
+        job.error = timeout.message;
+        job.providerStatus = 'timeout';
+        console.error(`[KLING] Job ${taskId} TIMED OUT: ${timeout.message}`);
+      } else if (parsed.status === 'FAILED') {
+        job.status = 'FAILED';
+        job.error = parsed.error?.message || 'Kling generation failed';
+        job.providerStatus = parsed.apiStatus;
+        console.error(`[KLING] Job ${taskId} FAILED — errCode=${parsed.error?.code} errMsg="${parsed.error?.message}"`);
+        console.error(`[KLING] Full task data:`, JSON.stringify(taskData, null, 2));
 
-      } else if (mappedStatus === 'SUCCEEDED') {
-        const remoteUrl = kling.extractVideoUrl(taskData);
+      } else if (parsed.status === 'SUCCEEDED' || parsed.status === 'COMPLETED_NO_URL') {
+        // If provider says done but URL is missing, wait for it
+        let finalVideoUrl = parsed.videoUrl;
+        if (!finalVideoUrl) {
+          console.log(`[KLING] Job ${taskId} completed but no video URL yet — waiting...`);
+          const waited = await kling.waitForVideoUrl(job.providerTaskId);
+          finalVideoUrl = waited.videoUrl;
+          if (!finalVideoUrl) {
+            job.status = 'FAILED';
+            job.error = 'Provider completed but never returned a video URL.';
+            job.providerStatus = 'completed_no_url';
+            console.error(`[KLING] Job ${taskId} FAILED — completed but video URL never appeared`);
+          }
+        }
 
-        if (!remoteUrl) {
-          // Video not ready yet despite "completed" status — keep polling
-          console.log(`[KLING] Job ${taskId} completed but video URL not available yet`);
-        } else {
+        if (finalVideoUrl) {
           const localPath = path.join(videosDir, `${taskId}.mp4`);
 
-          // Download only if we haven't already
           if (!fs.existsSync(localPath)) {
             try {
               console.log(`[KLING] Downloading video for job ${taskId}...`);
-              await downloadFile(remoteUrl, localPath);
+              await downloadFile(finalVideoUrl, localPath);
               console.log(`[KLING] Downloaded -> ${taskId}.mp4`);
             } catch (dlErr) {
-              // Transient download failure — stay PENDING, retry on next poll
               console.error(`[KLING] Download failed for ${taskId}:`, dlErr.message);
             }
           }
@@ -653,13 +711,14 @@ app.get('/api/task/:taskId', async (req, res) => {
           if (fs.existsSync(localPath)) {
             job.status   = 'SUCCEEDED';
             job.videoUrl = buildPublicUrl(`/videos/${taskId}.mp4`);
-            console.log(`[KLING] Job ${taskId} SUCCEEDED`);
+            const elapsedMs = Date.now() - (job.createdAt || Date.now());
+            console.log(`[KLING] Job ${taskId} SUCCEEDED (poll #${job._pollCount}, ${(elapsedMs / 1000).toFixed(0)}s elapsed)`);
           }
         }
       }
-      // mappedStatus === 'PENDING' → do nothing, stay PENDING
+      // parsed.status === 'PENDING' → stay PENDING, poll again
     } catch (err) {
-      console.error('[KLING] Poll error:', err.message);
+      console.error(`[KLING] Poll error for ${taskId}:`, err.message);
     }
   }
 
@@ -670,16 +729,47 @@ app.get('/api/task/:taskId', async (req, res) => {
       try {
         const klingClient = kling || require('./klingClient');
         const taskData = await klingClient.getTask(job.providerTaskId);
-        const mappedStatus = klingClient.mapStatus(taskData.status);
+        const parsed   = klingClient.parseTaskStatus(taskData);
 
-        if (mappedStatus === 'FAILED') {
+        job._pollCount = (job._pollCount || 0) + 1;
+
+        // Log snapshot every 5th poll or on terminal state
+        if (job._pollCount % 5 === 1 || parsed.status !== 'PENDING') {
+          console.log(klingClient.snapshotLog(job.providerTaskId, parsed, job.createdAt));
+        }
+
+        // Two-phase timeout check
+        const timeout = klingClient.checkTimeout(parsed, job.createdAt);
+        if (timeout.timedOut) {
           job.status = 'FAILED';
-          job.error = taskData.error?.message || taskData.error || 'Kling generation failed';
+          job.error = timeout.message;
+          job.providerStatus = 'timeout';
           viralActiveCount = Math.max(0, viralActiveCount - 1);
-          console.log(`[VIRAL] Job ${taskId} provider FAILED`);
+          console.error(`[VIRAL] Job ${taskId} TIMED OUT: ${timeout.message}`);
+        } else if (parsed.status === 'FAILED') {
+          job.status = 'FAILED';
+          job.error = parsed.error?.message || 'Kling generation failed';
+          job.providerStatus = parsed.apiStatus;
+          viralActiveCount = Math.max(0, viralActiveCount - 1);
+          console.error(`[VIRAL] Job ${taskId} provider FAILED — errCode=${parsed.error?.code} errMsg="${parsed.error?.message}"`);
 
-        } else if (mappedStatus === 'SUCCEEDED') {
-          const remoteUrl = klingClient.extractVideoUrl(taskData);
+        } else if (parsed.status === 'SUCCEEDED' || parsed.status === 'COMPLETED_NO_URL') {
+          // If provider says done but URL is missing, wait for it
+          let finalVideoUrl = parsed.videoUrl;
+          if (!finalVideoUrl) {
+            console.log(`[VIRAL] Job ${taskId} completed but no video URL yet — waiting...`);
+            const waited = klingClient.waitForVideoUrl(job.providerTaskId);
+            const waitResult = await waited;
+            finalVideoUrl = waitResult.videoUrl;
+            if (!finalVideoUrl) {
+              job.status = 'FAILED';
+              job.error = 'Provider completed but never returned a video URL.';
+              job.providerStatus = 'completed_no_url';
+              viralActiveCount = Math.max(0, viralActiveCount - 1);
+              console.error(`[VIRAL] Job ${taskId} FAILED — completed but video URL never appeared`);
+            }
+          }
+          const remoteUrl = finalVideoUrl;
 
           if (remoteUrl && !job.viralPostStarted) {
             // Provider done — start FFmpeg post-processing in background
@@ -758,11 +848,11 @@ app.get('/api/task/:taskId', async (req, res) => {
               }
             })();
           }
-          // If remoteUrl is null, provider says done but no URL yet — keep polling
+          // If videoUrl is null, provider says done but no URL yet — keep polling
         }
-        // mappedStatus === 'PENDING' → keep waiting
+        // parsed.status === 'PENDING' → keep waiting
       } catch (err) {
-        console.error('[VIRAL] Poll error:', err.message);
+        console.error(`[VIRAL] Poll error for ${taskId}:`, err.message);
       }
     }
     // Mock mode viral jobs are updated by setTimeout (no polling needed)
@@ -783,7 +873,12 @@ app.get('/api/task/:taskId', async (req, res) => {
       response.videoUrl = job.videoUrl;
     }
   }
-  if (job.status === 'FAILED') response.error = job.error || 'Job failed';
+  if (job.status === 'FAILED') {
+    response.error = {
+      message: job.error || 'Job failed',
+      providerStatus: job.providerStatus || null,
+    };
+  }
 
   // ── Viral-specific response fields ──
   if (job.mode === 'viral') {
@@ -795,6 +890,20 @@ app.get('/api/task/:taskId', async (req, res) => {
   }
 
   res.json(response);
+});
+
+// ── Debug: raw PiAPI task inspection ─────────────────────
+app.get('/api/debug/piapi-task/:taskId', async (req, res) => {
+  try {
+    const klingClient = kling || require('./klingClient');
+    const raw = await klingClient.getRawTask(req.params.taskId);
+    const parsed = klingClient.parseTaskStatus(raw?.data || raw);
+    console.log(`[DEBUG] PiAPI task ${req.params.taskId}:`, klingClient.snapshotLog(req.params.taskId, parsed));
+    res.json({ raw, parsed });
+  } catch (err) {
+    console.error(`[DEBUG] PiAPI task lookup failed:`, err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // ── Start server ─────────────────────────────────────────

@@ -6,7 +6,7 @@ const fs = require('fs');
 const path = require('path');
 const { spawn } = require('child_process');
 const ffmpegPath = require('ffmpeg-static');
-const cloudinary = require('cloudinary').v2;
+const cloudinary = require('../lib/cloudinary');
 
 /**
  * Run ffmpeg with given args.
@@ -50,12 +50,6 @@ async function extractAudioFromVideo(videoPath) {
  * @returns {Promise<string>} secure URL
  */
 async function uploadAudioToCloudinary(localPath, filename) {
-  cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET,
-  });
-
   const publicId = path.basename(filename, path.extname(filename));
   const result = await cloudinary.uploader.upload(localPath, {
     resource_type: 'video', // Cloudinary uses 'video' for audio files too
