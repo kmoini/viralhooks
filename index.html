@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Viral Hook Generator — What Should I Post Today?</title>
+  <meta name="description" content="Free TikTok viral hook generator. Enter your niche, get 3 trending hooks + the perfect dance video template to go with each one." />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:title" content="Viral Hook Generator for TikTok" />
+  <meta property="og:description" content="Free tool: enter your niche, get 3 viral TikTok hooks + matching dance templates instantly." />
+  <meta property="og:url" content="https://viralhooks.app" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <a class="logo" href="/">VH</a>
+    <span class="logo-text">viralhooks.app</span>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>What Should I Post Today?</h1>
+      <p class="hero-sub">Enter your niche → get 3 viral TikTok hooks + the perfect dance to go with each one. Free, instant, no sign-up.</p>
+
+      <form id="hookForm" class="hook-form" autocomplete="off">
+        <div class="input-row">
+          <input
+            id="nicheInput"
+            type="text"
+            placeholder="Your niche (e.g. fitness, real estate, cooking…)"
+            maxlength="80"
+            required
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <button type="submit" id="generateBtn">
+            <span id="btnLabel">Generate Hooks</span>
+            <span id="btnSpinner" class="spinner" hidden></span>
+          </button>
+        </div>
+        <p id="formError" class="form-error" hidden></p>
+      </form>
+
+      <div class="examples">
+        <span class="examples-label">Try:</span>
+        <button class="chip" data-niche="fitness">fitness</button>
+        <button class="chip" data-niche="real estate">real estate</button>
+        <button class="chip" data-niche="cooking">cooking</button>
+        <button class="chip" data-niche="skincare">skincare</button>
+        <button class="chip" data-niche="coding">coding</button>
+        <button class="chip" data-niche="personal finance">personal finance</button>
+      </div>
+    </section>
+
+    <section id="results" class="results" hidden>
+      <h2 class="results-title">Your Viral Hooks</h2>
+      <div id="hookCards" class="hook-cards"></div>
+    </section>
+
+    <section class="how-it-works">
+      <h2>How it works</h2>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <p>Enter your niche — our AI scans what's trending right now for your audience</p>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <p>Get 3 ready-to-use viral hooks, each matched to a proven dance template</p>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <p>Click "Generate with my face" — put yourself in the video in seconds</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Powered by <a href="https://snapdance.app" target="_blank" rel="noopener">SnapDance</a> — AI dance video generator</p>
+  </footer>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>
