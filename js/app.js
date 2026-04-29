@@ -10,6 +10,10 @@
   const resultsSection = document.getElementById('results');
   const hookCards = document.getElementById('hookCards');
 
+  // Pre-fill niche from body data attribute (niche landing pages)
+  var presetNiche = document.body.dataset.presetNiche;
+  if (presetNiche) input.value = presetNiche;
+
   // Niche chips
   document.querySelectorAll('.chip').forEach(function (chip) {
     chip.addEventListener('click', function () {

@@ -1,0 +1,153 @@
+/* ── Niche landing page styles ── */
+
+.niche-hero {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 56px 24px 40px;
+}
+
+.niche-breadcrumb {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 18px;
+}
+.niche-breadcrumb a {
+  color: var(--text-muted);
+  text-decoration: none;
+}
+.niche-breadcrumb a:hover { color: var(--accent); }
+
+.niche-hero h1 {
+  font-size: clamp(1.75rem, 4.5vw, 2.6rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin-bottom: 14px;
+}
+
+.hero-sub {
+  color: var(--text-secondary);
+  font-size: 1.05rem;
+  max-width: 580px;
+  line-height: 1.65;
+}
+
+/* ── Example hooks grid ── */
+.example-hooks {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 24px 56px;
+}
+
+.example-hooks h2 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin-bottom: 24px;
+  color: var(--text-muted);
+}
+
+.hooks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.hook-example {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color 0.15s;
+}
+.hook-example:hover { border-color: #444; }
+
+.hook-num {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: var(--accent);
+  letter-spacing: 0.08em;
+}
+
+.hook-example p {
+  font-size: 0.92rem;
+  line-height: 1.45;
+  color: var(--text);
+  flex: 1;
+}
+
+.btn-copy-small {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 0.78rem;
+  cursor: pointer;
+  align-self: flex-start;
+  transition: border-color 0.15s, color 0.15s;
+}
+.btn-copy-small:hover { border-color: #555; color: var(--text); }
+.btn-copy-small.copied { border-color: #00c853; color: #00c853; }
+
+/* ── Niche generator section ── */
+.niche-generator {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 0 24px 56px;
+}
+
+.niche-generator h2 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.niche-generator > p {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  margin-bottom: 24px;
+}
+
+/* ── Niche nav ── */
+.niche-nav {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 24px 72px;
+  border-top: 1px solid var(--border);
+  padding-top: 40px;
+}
+
+.niche-nav h3 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+}
+
+.niche-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.niche-links a {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  border-radius: 50px;
+  padding: 6px 16px;
+  font-size: 0.82rem;
+  text-decoration: none;
+  transition: border-color 0.15s, color 0.15s;
+}
+.niche-links a:hover { border-color: var(--accent); color: var(--text); }
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .niche-hero { padding: 36px 16px 28px; }
+  .example-hooks, .niche-generator, .niche-nav { padding-left: 16px; padding-right: 16px; }
+  .hooks-grid { grid-template-columns: 1fr; }
+}
