@@ -317,6 +317,44 @@ main { flex: 1; }
   line-height: 1.7;
 }
 
+/* ── Niche pages section (homepage) ── */
+.niche-pages {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 24px 72px;
+  text-align: center;
+  border-top: 1px solid var(--border);
+  padding-top: 56px;
+}
+.niche-pages h2 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: var(--text-muted);
+}
+.niche-pages > p {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  margin-bottom: 24px;
+}
+.niche-page-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+.niche-page-links a {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  border-radius: 50px;
+  padding: 6px 16px;
+  font-size: 0.82rem;
+  text-decoration: none;
+  transition: border-color 0.15s, color 0.15s;
+}
+.niche-page-links a:hover { border-color: var(--accent); color: var(--text); }
+
 /* ── FAQ ── */
 .faq {
   max-width: 680px;

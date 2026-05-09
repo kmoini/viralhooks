@@ -145,9 +145,31 @@
 }
 .niche-links a:hover { border-color: var(--accent); color: var(--text); }
 
+/* ── Niche guide section ── */
+.niche-guide {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 24px 56px;
+}
+
+.niche-guide h2 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+.niche-guide p {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.75;
+  margin-bottom: 16px;
+}
+
+.niche-guide p:last-child { margin-bottom: 0; }
+
 /* ── Responsive ── */
 @media (max-width: 600px) {
   .niche-hero { padding: 36px 16px 28px; }
-  .example-hooks, .niche-generator, .niche-nav { padding-left: 16px; padding-right: 16px; }
+  .example-hooks, .niche-generator, .niche-nav, .niche-guide { padding-left: 16px; padding-right: 16px; }
   .hooks-grid { grid-template-columns: 1fr; }
 }
