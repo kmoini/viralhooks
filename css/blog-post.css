@@ -97,6 +97,10 @@
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+.article-body a.cta-button {
+  color: #fff;
+  text-decoration: none;
+}
 
 /* ── TL;DR / Definition boxes ── */
 .article-tldr {
