@@ -33,6 +33,17 @@ body {
   padding: 18px 24px;
   border-bottom: 1px solid var(--border);
 }
+.site-nav { margin-left: auto; }
+.site-nav .nav-link {
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 15px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+.site-nav .nav-link:hover { background: var(--bg-card); color: var(--accent); }
 .logo {
   background: var(--accent);
   color: #fff;

@@ -1,0 +1,21 @@
+# ViralHooks
+
+> Free TikTok hook generator — enter a niche, get 3 AI-generated viral opening hooks plus a matching dance template, in seconds.
+
+ViralHooks solves a specific creator problem: knowing how to open a TikTok video so people don't scroll past in the first 2 seconds. Enter your niche (fitness, real estate, skincare, coaching, and 50+ others) and get 3 AI-generated hook lines tailored to it, free, with no sign-up.
+
+## Pages
+
+- [Home](https://viralhooks.app/): The hook generator tool, plus an FAQ on what makes a TikTok hook work.
+- [Blog](https://viralhooks.app/blog): Articles on viral TikTok content strategy.
+- [TikTok Hook Examples](https://viralhooks.app/tiktok-hook-examples): 50+ proven hook examples organized by format (POV, number, bold-claim, question, call-out hooks).
+- [25 TikTok Video Ideas That Consistently Go Viral](https://viralhooks.app/blog/25-tiktok-video-ideas-that-consistently-go-viral-2026)
+- [Best Viral TikTok Ideas for Faceless Creators](https://viralhooks.app/blog/best-viral-tiktok-ideas-for-faceless-creators-2026)
+
+## Niche hook pages
+
+Dedicated hook-example pages per niche: [coaches](https://viralhooks.app/tiktok-hooks-coaches), [coding](https://viralhooks.app/tiktok-hooks-coding), [cooking](https://viralhooks.app/tiktok-hooks-cooking), [fashion](https://viralhooks.app/tiktok-hooks-fashion), [finance](https://viralhooks.app/tiktok-hooks-finance), [fitness](https://viralhooks.app/tiktok-hooks-fitness), [mental health](https://viralhooks.app/tiktok-hooks-mental-health), [parenting](https://viralhooks.app/tiktok-hooks-parenting), [real estate](https://viralhooks.app/tiktok-hooks-real-estate), [skincare](https://viralhooks.app/tiktok-hooks-skincare), [small business](https://viralhooks.app/tiktok-hooks-small-business), [travel](https://viralhooks.app/tiktok-hooks-travel).
+
+## Related
+
+- [SnapDance](https://snapdance.app): The AI dance video generator ViralHooks pairs each hook with a matching dance template from — upload a selfie, generate a video of yourself performing the dance.
