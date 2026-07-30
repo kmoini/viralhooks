@@ -50,9 +50,9 @@ Each niche page has these sections in order:
 4. **`.niche-generator`** — AI generator form (pre-filled via `data-preset-niche` on `<body>`)
 5. **`#results`** — hidden until generation
 6. **`.faq`** — 3 niche-specific FAQ items with `<details>` elements
-7. **`.niche-nav`** — links to all 12 other niche pages + `/tiktok-hook-examples`
+7. **`.niche-nav`** — links to all 14 other niche pages + `/tiktok-hook-examples`
 
-**Homepage (`index.html`)** additionally has a **`.niche-pages`** section (between `.differentiator` and `.faq`) with a `.niche-page-links` grid linking to all 13 niche pages. This is the only crawlable outbound link structure from the homepage to niche pages — the chips above the generator are `<button>` elements (JS quick-fill only, not crawlable).
+**Homepage (`index.html`)** additionally has a **`.niche-pages`** section (between `.differentiator` and `.faq`) with a `.niche-page-links` grid linking to all 15 niche pages. This is the only crawlable outbound link structure from the homepage to niche pages — the chips above the generator are `<button>` elements (JS quick-fill only, not crawlable).
 
 ## Adding a new niche page
 
@@ -76,8 +76,8 @@ Each niche page loads both `/js/app.js` and `/js/niche.js`.
 The site has a three-layer link structure (critical for SEO PageRank flow):
 
 - **Homepage → niche pages:** `.niche-pages` section with `.niche-page-links` grid (crawlable `<a>` tags)
-- **Niche page → other niche pages:** `.niche-nav` at the bottom of every niche page links to all 12 siblings + `/tiktok-hook-examples`
-- **Examples page → niche pages:** `.niche-nav` links to all 13 niche pages
+- **Niche page → other niche pages:** `.niche-nav` at the bottom of every niche page links to all 14 siblings + `/tiktok-hook-examples`
+- **Examples page → niche pages:** `.niche-nav` links to all 15 niche pages
 
 When adding a new niche page, all three layers must be updated or the new page will be orphaned from the link graph.
 
@@ -118,6 +118,9 @@ Response:
 | `/tiktok-hooks-parenting` | "tiktok hooks for parenting" |
 | `/tiktok-hooks-coding` | "tiktok hooks for coding" |
 | `/tiktok-hooks-mental-health` | "tiktok hooks for mental health" |
+| `/tiktok-hooks-teacher` | "tiktok hooks for teachers" |
+| `/tiktok-hooks-dentist` | "tiktok hooks for dentists" |
+| `/tiktok-hooks-restaurant` | "tiktok hooks for restaurants" |
 
 ## SEO rules
 
