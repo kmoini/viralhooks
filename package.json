@@ -2,5 +2,8 @@
   "name": "viralhooks",
   "version": "1.0.0",
   "private": true,
-  "description": "Free viral TikTok hook generator — powered by SnapDance"
+  "description": "Free viral TikTok hook generator — powered by SnapDance",
+  "scripts": {
+    "deploy": "vercel --prod --yes && node indexnow-ping.js"
+  }
 }

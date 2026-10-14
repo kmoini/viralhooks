@@ -19,10 +19,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Deploy
 
 ```bash
-cd C:\PROJECTS\viralhooks && vercel --prod --yes
+cd C:\PROJECTS\viralhooks && npm run deploy
 ```
 
-No gate script. No build step. Vercel deploys the working tree directly.
+Runs `vercel --prod --yes` then pings IndexNow (Bing/Yandex/Naver/Seznam.cz —
+Google doesn't participate, GSC stays separate) with any sitemap URL not yet
+recorded in `.indexnow-submitted.json`. The IndexNow step is best-effort and
+never fails the deploy. Key file `00141ebff8efe6b6407f4cce276153b6.txt` must
+stay at the site root — that's how IndexNow verifies ownership.
+
+No gate script. No build step beyond the above. Vercel deploys the working
+tree directly.
 
 To push to GitHub (needs PAT for kmoini/viralhooks — old PAT was rotated):
 ```bash
